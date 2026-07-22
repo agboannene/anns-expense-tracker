@@ -5,7 +5,9 @@ import { dailySpendEntries } from "@/lib/db/schema"
 import { sql } from "drizzle-orm"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { AddSpendForm } from "@/components/daily-spend/add-spend-form"
+import dynamicImport from "next/dynamic"
+
+const AddSpendForm = dynamicImport(() => import("@/components/daily-spend/add-spend-form").then(m => m.AddSpendForm), { ssr: false })
 
 function getMonthRange() {
   const now = new Date()
