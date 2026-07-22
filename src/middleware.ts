@@ -1,18 +1,23 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 
-const publicRoutes = ["/sign-in", "/sign-up"]
+const publicRoutes = ["/sign-in", "/sign-up", "/reset-password"]
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  if (publicRoutes.some(route => pathname.startsWith(route))) {
-    return NextResponse.next()
-  }
-
   const session = await auth.api.getSession({
     headers: request.headers,
   })
+
+  if (publicRoutes.some(route => pathname.startsWith(route))) {
+    if (session) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/dashboard"
+      return NextResponse.redirect(url)
+    }
+    return NextResponse.next()
+  }
 
   if (!session) {
     const url = request.nextUrl.clone()

@@ -1,34 +1,43 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PasswordInput } from "@/components/ui/password-input"
 import { authClient } from "@/lib/auth-client"
 
-export default function SignUpPage() {
+export default function ResetPasswordPage() {
   const router = useRouter()
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
+  const searchParams = useSearchParams()
+  const token = searchParams.get("token")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+
+  if (!token) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center">
+          <p className="text-sm text-zinc-500">Invalid or missing reset token.</p>
+          <Link href="/sign-in" className="text-sm text-amber hover:underline mt-2 block">Back to sign in</Link>
+        </CardContent>
+      </Card>
+    )
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError("")
     setLoading(true)
     try {
-      const { error } = await authClient.signUp.email({ name, email, password })
+      const { error } = await authClient.resetPassword({ newPassword: password, token })
       if (error) {
-        setError(error.message || "Could not create account")
+        setError(error.message || "Could not reset password")
       } else {
         router.push("/sign-in")
-        router.refresh()
       }
     } catch {
       setError("Something went wrong")
@@ -40,30 +49,13 @@ export default function SignUpPage() {
   return (
     <Card>
       <CardContent className="p-6">
+        <div className="mb-4">
+          <h2 className="font-semibold">New Password</h2>
+          <p className="text-sm text-zinc-500 mt-1">Enter your new password below.</p>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              placeholder="Ann"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="ann@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">New Password</Label>
             <PasswordInput
               id="password"
               placeholder="••••••••"
@@ -75,13 +67,9 @@ export default function SignUpPage() {
           </div>
           {error && <p className="text-sm text-rust">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Creating account..." : "Sign Up"}
+            {loading ? "Resetting..." : "Reset Password"}
           </Button>
         </form>
-        <p className="text-center text-sm text-zinc-500 mt-4">
-          Already have an account?{" "}
-          <Link href="/sign-in" className="text-amber hover:underline">Sign in</Link>
-        </p>
       </CardContent>
     </Card>
   )
