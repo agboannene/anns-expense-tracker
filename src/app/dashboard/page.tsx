@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic"
 
 import { db } from "@/lib/db"
 import { savingsGoals, savingsContributions, recurringItems, pendingItems, dailySpendEntries, incomeEntries } from "@/lib/db/schema"
-import { eq, and, gte, lte, sql, inArray } from "drizzle-orm"
+import { eq, sql, inArray } from "drizzle-orm"
 import { SummaryCard } from "@/components/dashboard/summary-card"
 import { IncomeForm } from "@/components/dashboard/income-form"
 import { PiggyBank, Clock, Receipt, DollarSign } from "lucide-react"
@@ -46,20 +46,12 @@ export default async function DashboardPage() {
   const monthlySpend = await db
     .select({ total: sql<string>`coalesce(sum(${dailySpendEntries.amount}), '0')` })
     .from(dailySpendEntries)
-    .where(and(
-      eq(dailySpendEntries.userId, userId),
-      gte(dailySpendEntries.date, start),
-      lte(dailySpendEntries.date, end),
-    ))
+    .where(sql`${dailySpendEntries.userId} = ${userId} AND ${dailySpendEntries.date} >= ${start} AND ${dailySpendEntries.date} <= ${end}`)
 
   const monthlyIncome = await db
     .select({ total: sql<string>`coalesce(sum(${incomeEntries.amount}), '0')` })
     .from(incomeEntries)
-    .where(and(
-      eq(incomeEntries.userId, userId),
-      gte(incomeEntries.date, start),
-      lte(incomeEntries.date, end),
-    ))
+    .where(sql`${incomeEntries.userId} = ${userId} AND ${incomeEntries.date} >= ${start} AND ${incomeEntries.date} <= ${end}`)
 
   const upcomingRecurring = await db
     .select()

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic"
 
 import { db } from "@/lib/db"
 import { dailySpendEntries } from "@/lib/db/schema"
-import { eq, and, gte, lte, sql } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { AddSpendForm } from "@/components/daily-spend/add-spend-form"
@@ -25,11 +25,7 @@ export default async function DailySpendPage() {
     entries = await db
       .select()
       .from(dailySpendEntries)
-      .where(and(
-        eq(dailySpendEntries.userId, userId),
-        gte(dailySpendEntries.date, start),
-        lte(dailySpendEntries.date, end),
-      ))
+      .where(sql`${dailySpendEntries.userId} = ${userId} AND ${dailySpendEntries.date} >= ${start} AND ${dailySpendEntries.date} <= ${end}`)
       .orderBy(sql`${dailySpendEntries.date} desc`)
   } catch (err: any) {
     error = err.message
