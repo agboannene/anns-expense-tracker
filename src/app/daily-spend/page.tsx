@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic"
 import { db } from "@/lib/db"
 import { dailySpendEntries } from "@/lib/db/schema"
 import { sql } from "drizzle-orm"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 function getMonthRange() {
   const now = new Date()
@@ -38,28 +39,38 @@ export default async function DailySpendPage() {
       <h1 className="text-xl font-bold">Daily Spend</h1>
 
       {queryError && (
-        <div className="border border-red-300 rounded-lg p-4">
-          <p className="text-red-400 font-mono text-sm">Query Error: {queryError}</p>
-        </div>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-red-400 font-mono text-sm">Query Error: {queryError}</p>
+          </CardContent>
+        </Card>
       )}
 
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
-        <h2 className="font-semibold mb-2">This Month</h2>
-        {Object.entries(totals).length === 0 ? (
-          <p className="text-sm text-zinc-400">No spending yet.</p>
-        ) : (
-          Object.entries(totals).map(([currency, total]) => (
-            <p key={currency} className="amount text-lg">
-              {total.toLocaleString()} {currency}
-            </p>
-          ))
-        )}
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>This Month</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {Object.entries(totals).length === 0 ? (
+            <p className="text-sm text-zinc-400">No spending yet.</p>
+          ) : (
+            Object.entries(totals).map(([currency, total]) => (
+              <p key={currency} className="amount text-lg">
+                {total.toLocaleString()} {currency}
+              </p>
+            ))
+          )}
+        </CardContent>
+      </Card>
 
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
-        <h2 className="font-semibold mb-2">Log Spending</h2>
-        <p className="text-sm text-zinc-400">Form coming soon</p>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Log Spending</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-zinc-400">Form coming soon</p>
+        </CardContent>
+      </Card>
 
       <hr className="border-zinc-200 dark:border-zinc-700" />
 
