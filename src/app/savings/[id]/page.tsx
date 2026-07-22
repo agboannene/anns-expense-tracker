@@ -1,8 +1,7 @@
 "use client"
 
-import React from "react"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import React, { useState, useEffect } from "react"
+import { useRouter, useParams } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -12,9 +11,9 @@ import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
 import { Pencil, Trash2 } from "lucide-react"
 
-export default function SavingsGoalPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = React.use(params)
-  const goalId = Number(id)
+export default function SavingsGoalPage() {
+  const routeParams = useParams()
+  const goalId = Number(routeParams.id)
   const router = useRouter()
 
   const [goal, setGoal] = useState<any>(null)
@@ -35,7 +34,7 @@ export default function SavingsGoalPage({ params }: { params: Promise<{ id: stri
 
   async function loadData() {
     try {
-      const res = await fetch(`/api/savings/goal?id=${goalId}`)
+      const res = await fetch(`/api/savings?id=${goalId}`)
       if (res.ok) {
         const data = await res.json()
         setGoal(data.goal)
@@ -50,7 +49,7 @@ export default function SavingsGoalPage({ params }: { params: Promise<{ id: stri
     }
   }
 
-  useEffect(() => { loadData() }, [goalId])
+  useEffect(() => { if (goalId) loadData() }, [goalId])
 
   async function handleUpdate(e: React.FormEvent) {
     e.preventDefault()
@@ -192,7 +191,7 @@ export default function SavingsGoalPage({ params }: { params: Promise<{ id: stri
         <div className="flex items-center justify-between text-sm">
           <span className="amount">{Number(totalContributions).toLocaleString()} {goal.currency}</span>
           <span className="text-zinc-400">{Math.round(progress)}%</span>
-        </div>
+          </div>
         <Progress value={progress} className="h-3" />
       </div>
 
