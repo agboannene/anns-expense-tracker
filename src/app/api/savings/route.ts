@@ -1,7 +1,26 @@
 import { db } from "@/lib/db"
-import { savingsGoals } from "@/lib/db/schema"
+import { savingsGoals, savingsContributions } from "@/lib/db/schema"
 import { NextResponse } from "next/server"
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const id = searchParams.get("id")
+
+  if (id) {
+    const [goal] = await db.select().from(savingsGoals).where(eq(savingsGoals.id, Number(id)))
+    if (!goal) return NextResponse.json({ error: "Not found" }, { status: 404 })
+    const contributions = await db
+      .select()
+      .from(savingsContributions)
+      .where(eq(savingsContributions.goalId, Number(id)))
+      .orderBy(sql`${savingsContributions.date} desc`)
+    return NextResponse.json({ goal, contributions })
+  }
+
+  const goals = await db.select().from(savingsGoals).where(eq(savingsGoals.userId, "1"))
+  return NextResponse.json(goals)
+}
 
 export async function POST(req: Request) {
   const body = await req.json()
