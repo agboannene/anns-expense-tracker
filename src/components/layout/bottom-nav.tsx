@@ -1,14 +1,17 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { authClient } from "@/lib/auth-client"
 import {
   LayoutDashboard,
   PiggyBank,
   Repeat,
   Clock,
   Receipt,
+  LogOut,
 } from "lucide-react"
 
 const navItems = [
@@ -21,6 +24,13 @@ const navItems = [
 
 export function BottomNav() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  async function handleSignOut() {
+    await authClient.signOut()
+    router.push("/sign-in")
+    router.refresh()
+  }
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
@@ -43,6 +53,13 @@ export function BottomNav() {
             </Link>
           )
         })}
+        <button
+          onClick={handleSignOut}
+          className="flex flex-col items-center gap-0.5 px-3 py-1 text-[10px] font-medium text-zinc-500 dark:text-zinc-400 transition-colors"
+        >
+          <LogOut className="h-5 w-5" />
+          Sign Out
+        </button>
       </div>
     </nav>
   )

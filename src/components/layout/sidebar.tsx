@@ -1,14 +1,17 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { authClient } from "@/lib/auth-client"
 import {
   LayoutDashboard,
   PiggyBank,
   Repeat,
   Clock,
   Receipt,
+  LogOut,
 } from "lucide-react"
 
 const navItems = [
@@ -21,6 +24,13 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  async function handleSignOut() {
+    await authClient.signOut()
+    router.push("/sign-in")
+    router.refresh()
+  }
 
   return (
     <aside className="hidden md:flex h-full w-56 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
@@ -49,6 +59,15 @@ export function Sidebar() {
           )
         })}
       </nav>
+      <div className="p-3 border-t border-zinc-200 dark:border-zinc-800">
+        <button
+          onClick={handleSignOut}
+          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 w-full transition-colors"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign Out
+        </button>
+      </div>
     </aside>
   )
 }
