@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface AddSpendFormProps {
   onSuccess: () => void
@@ -43,15 +42,17 @@ export function AddSpendForm({ onSuccess }: AddSpendFormProps) {
           <Input id="amount" type="number" step="0.01" placeholder="e.g. 2500" value={amount} onChange={(e) => setAmount(e.target.value)} required autoFocus />
         </div>
         <div className="w-24">
-          <Label>Curr</Label>
-          <Select value={currency} onValueChange={setCurrency}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="NGN">NGN</SelectItem>
-              <SelectItem value="USD">USD</SelectItem>
-              <SelectItem value="EUR">EUR</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label htmlFor="currency">Curr</Label>
+          <select
+            id="currency"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+            className="flex h-10 w-full items-center justify-between rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+          >
+            <option value="NGN">NGN</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+          </select>
         </div>
         <Button type="submit" disabled={loading || !amount}>
           {loading ? "..." : "Log"}
