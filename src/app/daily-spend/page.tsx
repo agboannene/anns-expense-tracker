@@ -1,13 +1,11 @@
-export const dynamic = "force-dynamic"
+"use client"
 
-import { db } from "@/lib/db"
-import { dailySpendEntries } from "@/lib/db/schema"
-import { sql } from "drizzle-orm"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import dynamicImport from "next/dynamic"
-
-const AddSpendForm = dynamicImport(() => import("@/components/daily-spend/add-spend-form").then(m => m.AddSpendForm), { ssr: false })
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
 
 function getMonthRange() {
   const now = new Date()
@@ -16,21 +14,48 @@ function getMonthRange() {
   return { start, end }
 }
 
-export default async function DailySpendPage() {
+export default function DailySpendPage() {
   const userId = "1"
   const { start, end } = getMonthRange()
 
-  let entries: any[] = []
-  let queryError: string | null = null
+  const [entries, setEntries] = useState<any[]>([])
+  const [amount, setAmount] = useState("")
+  const [currency, setCurrency] = useState("NGN")
+  const [note, setNote] = useState("")
+  const [showNote, setShowNote] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [fetching, setFetching] = useState(true)
 
-  try {
-    entries = await db
-      .select()
-      .from(dailySpendEntries)
-      .where(sql`${dailySpendEntries.userId} = ${userId} AND ${dailySpendEntries.date} >= ${start} AND ${dailySpendEntries.date} <= ${end}`)
-      .orderBy(sql`${dailySpendEntries.date} desc`)
-  } catch (err: any) {
-    queryError = err.message
+  async function loadEntries() {
+    try {
+      const res = await fetch(`/api/daily-spend?userId=${userId}&start=${start}&end=${end}`)
+      if (res.ok) {
+        const data = await res.json()
+        setEntries(data)
+      }
+    } finally {
+      setFetching(false)
+    }
+  }
+
+  useEffect(() => { loadEntries() }, [])
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      const res = await fetch("/api/daily-spend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount, currency, note, date: new Date().toISOString().split("T")[0] }),
+      })
+      if (res.ok) {
+        setAmount(""); setNote(""); setShowNote(false)
+        loadEntries()
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   const totals = entries.reduce<Record<string, number>>((acc, e) => {
@@ -42,20 +67,14 @@ export default async function DailySpendPage() {
     <div className="flex-1 p-4 md:p-6 space-y-6 max-w-2xl">
       <h1 className="text-xl font-bold">Daily Spend</h1>
 
-      {queryError && (
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-red-400 font-mono text-sm">Query Error: {queryError}</p>
-          </CardContent>
-        </Card>
-      )}
-
       <Card>
         <CardHeader>
           <CardTitle>This Month</CardTitle>
         </CardHeader>
         <CardContent>
-          {Object.entries(totals).length === 0 ? (
+          {fetching ? (
+            <p className="text-sm text-zinc-400">Loading...</p>
+          ) : Object.entries(totals).length === 0 ? (
             <p className="text-sm text-zinc-400">No spending yet.</p>
           ) : (
             Object.entries(totals).map(([currency, total]) => (
@@ -72,7 +91,43 @@ export default async function DailySpendPage() {
           <CardTitle>Log Spending</CardTitle>
         </CardHeader>
         <CardContent>
-          <AddSpendForm onSuccess={() => {}} />
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <Label htmlFor="amount">Amount</Label>
+                <Input id="amount" type="number" step="0.01" placeholder="e.g. 2500" value={amount} onChange={(e) => setAmount(e.target.value)} required autoFocus />
+              </div>
+              <div className="w-24">
+                <Label htmlFor="currency">Curr</Label>
+                <select
+                  id="currency"
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="flex h-10 w-full items-center justify-between rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                >
+                  <option value="NGN">NGN</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                </select>
+              </div>
+              <Button type="submit" disabled={loading || !amount}>
+                {loading ? "..." : "Log"}
+              </Button>
+            </div>
+            <div>
+              <button type="button" onClick={() => setShowNote(!showNote)} className="text-xs text-amber hover:underline">
+                {showNote ? "Hide note" : "+ Add note"}
+              </button>
+              {showNote && (
+                <Input
+                  placeholder="e.g. transport, lunch"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  className="mt-1"
+                />
+              )}
+            </div>
+          </form>
         </CardContent>
       </Card>
 
@@ -80,7 +135,9 @@ export default async function DailySpendPage() {
 
       <div>
         <h2 className="font-semibold mb-3">Entries</h2>
-        {entries.length === 0 ? (
+        {fetching ? (
+          <p className="text-sm text-zinc-400 italic py-4 text-center">Loading...</p>
+        ) : entries.length === 0 ? (
           <p className="text-sm text-zinc-400 italic py-4 text-center">
             No spending logged yet this month.
           </p>
@@ -92,9 +149,7 @@ export default async function DailySpendPage() {
                   <span className="amount">{Number(entry.amount).toLocaleString()} {entry.currency}</span>
                   {entry.note && <span className="text-zinc-400 text-xs">{entry.note}</span>}
                 </div>
-                <span className="text-xs text-zinc-400">
-                  {new Date(entry.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                </span>
+                <span className="text-xs text-zinc-400">{entry.date}</span>
               </div>
             ))}
           </div>
