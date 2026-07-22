@@ -33,7 +33,7 @@ export default function ResetPasswordPage() {
     setError("")
     setLoading(true)
     try {
-      const { error } = await authClient.resetPassword({ newPassword: password, token })
+      const { error } = await authClient.resetPassword({ newPassword: password, token: token! })
       if (error) {
         setError(error.message || "Could not reset password")
       } else {
