@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { PasswordInput } from "@/components/ui/password-input"
 import { authClient } from "@/lib/auth-client"
 
+
 export default function SignInPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
@@ -46,11 +47,16 @@ export default function SignInPage() {
     setResetLoading(true)
     setResetMsg("")
     try {
-      const { error } = await authClient.forgotPassword({ email: resetEmail, redirectTo: "/reset-password" })
-      if (error) {
-        setResetMsg(error.message || "Could not send reset email")
-      } else {
+      const res = await fetch("/api/auth/forget-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: resetEmail, redirectTo: "/reset-password" }),
+      })
+      if (res.ok) {
         setResetMsg("Check your email for a reset link.")
+      } else {
+        const data = await res.json()
+        setResetMsg(data.message || "Could not send reset email")
       }
     } catch {
       setResetMsg("Something went wrong")
