@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ContributeForm } from "@/components/savings/contribute-form"
+import { GoalToolbar } from "@/components/savings/goal-toolbar"
 
 export default async function SavingsGoalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -37,12 +38,15 @@ export default async function SavingsGoalPage({ params }: { params: Promise<{ id
     <div className="flex-1 p-4 md:p-6 space-y-6 max-w-2xl">
       <Link href="/savings" className="text-sm text-amber hover:underline">&larr; Back to Savings</Link>
 
-      <div>
-        <h1 className="text-xl font-bold">{goal.name}</h1>
-        <p className="text-sm text-zinc-500 mt-1">
-          Target: {Number(goal.targetAmount).toLocaleString()} {goal.currency}
-          {goal.targetDate && ` by ${new Date(goal.targetDate).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}`}
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-bold">{goal.name}</h1>
+          <p className="text-sm text-zinc-500 mt-1">
+            Target: {Number(goal.targetAmount).toLocaleString()} {goal.currency}
+            {goal.targetDate && ` by ${new Date(goal.targetDate).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}`}
+          </p>
+        </div>
+        <GoalToolbar goal={{ id: goal.id, name: goal.name, targetAmount: goal.targetAmount, currency: goal.currency, targetDate: goal.targetDate }} />
       </div>
 
       <div className="space-y-2">
