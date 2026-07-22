@@ -4,6 +4,8 @@ import { db } from "@/lib/db"
 import { dailySpendEntries } from "@/lib/db/schema"
 import { sql } from "drizzle-orm"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+import { AddSpendForm } from "@/components/daily-spend/add-spend-form"
 
 function getMonthRange() {
   const now = new Date()
@@ -68,11 +70,11 @@ export default async function DailySpendPage() {
           <CardTitle>Log Spending</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-zinc-400">Form coming soon</p>
+          <AddSpendForm onSuccess={() => {}} />
         </CardContent>
       </Card>
 
-      <hr className="border-zinc-200 dark:border-zinc-700" />
+      <Separator />
 
       <div>
         <h2 className="font-semibold mb-3">Entries</h2>
@@ -88,7 +90,9 @@ export default async function DailySpendPage() {
                   <span className="amount">{Number(entry.amount).toLocaleString()} {entry.currency}</span>
                   {entry.note && <span className="text-zinc-400 text-xs">{entry.note}</span>}
                 </div>
-                <span className="text-xs text-zinc-400">{entry.date}</span>
+                <span className="text-xs text-zinc-400">
+                  {new Date(entry.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                </span>
               </div>
             ))}
           </div>
