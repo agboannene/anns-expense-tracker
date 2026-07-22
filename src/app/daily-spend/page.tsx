@@ -18,8 +18,11 @@ export default async function DailySpendPage() {
   const userId = "1"
   const { start, end } = getMonthRange()
 
+  let entries: any[] = []
+  let error: string | null = null
+
   try {
-    const entries = await db
+    entries = await db
       .select()
       .from(dailySpendEntries)
       .where(and(
@@ -28,75 +31,82 @@ export default async function DailySpendPage() {
         lte(dailySpendEntries.date, end),
       ))
       .orderBy(sql`${dailySpendEntries.date} desc`)
-
-    const totals = entries.reduce<Record<string, number>>((acc, e) => {
-      acc[e.currency] = (acc[e.currency] || 0) + Number(e.amount)
-      return acc
-    }, {})
-
-    return (
-      <div className="flex-1 p-4 md:p-6 space-y-6 max-w-2xl">
-        <h1 className="text-xl font-bold">Daily Spend</h1>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>This Month</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {Object.entries(totals).map(([currency, total]) => (
-              <p key={currency} className="amount text-lg">
-                {total.toLocaleString()} {currency}
-              </p>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Log Spending</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AddSpendForm onSuccess={() => {}} />
-          </CardContent>
-        </Card>
-
-        <Separator />
-
-        <div>
-          <h2 className="font-semibold mb-3">Entries</h2>
-          {entries.length === 0 ? (
-            <p className="text-sm text-zinc-400 italic py-4 text-center">
-              No spending logged yet this month.
-            </p>
-          ) : (
-            <div className="space-y-1">
-              {entries.map((entry) => (
-                <div key={entry.id} className="flex items-center justify-between py-1.5 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="amount">{Number(entry.amount).toLocaleString()} {entry.currency}</span>
-                    {entry.note && <span className="text-zinc-400 text-xs">{entry.note}</span>}
-                  </div>
-                  <span className="text-xs text-zinc-400">
-                    {new Date(entry.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    )
   } catch (err: any) {
+    error = err.message
+  }
+
+  if (error) {
     return (
-      <div className="flex-1 p-4 md:p-6 space-y-4 max-w-2xl">
-        <h1 className="text-xl font-bold">Daily Spend</h1>
+      <div className="flex-1 p-4 md:p-6 max-w-2xl">
+        <h1 className="text-xl font-bold mb-4">Daily Spend</h1>
         <Card>
           <CardContent className="p-6">
-            <p className="text-red-400 font-mono text-sm">Error: {err.message}</p>
-            <pre className="text-xs text-zinc-500 mt-2 overflow-auto">{err.stack}</pre>
+            <p className="text-red-400 font-mono text-sm whitespace-pre-wrap">Query Error: {error}</p>
           </CardContent>
         </Card>
       </div>
     )
   }
+
+  const totals = entries.reduce<Record<string, number>>((acc, e) => {
+    acc[e.currency] = (acc[e.currency] || 0) + Number(e.amount)
+    return acc
+  }, {})
+
+  return (
+    <div className="flex-1 p-4 md:p-6 space-y-6 max-w-2xl">
+      <h1 className="text-xl font-bold">Daily Spend</h1>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>This Month</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {Object.entries(totals).length === 0 ? (
+            <p className="text-sm text-zinc-400">No spending yet.</p>
+          ) : (
+            Object.entries(totals).map(([currency, total]) => (
+              <p key={currency} className="amount text-lg">
+                {total.toLocaleString()} {currency}
+              </p>
+            ))
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Log Spending</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AddSpendForm onSuccess={() => {}} />
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      <div>
+        <h2 className="font-semibold mb-3">Entries</h2>
+        {entries.length === 0 ? (
+          <p className="text-sm text-zinc-400 italic py-4 text-center">
+            No spending logged yet this month.
+          </p>
+        ) : (
+          <div className="space-y-1">
+            {entries.map((entry) => (
+              <div key={entry.id} className="flex items-center justify-between py-1.5 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="amount">{Number(entry.amount).toLocaleString()} {entry.currency}</span>
+                  {entry.note && <span className="text-zinc-400 text-xs">{entry.note}</span>}
+                </div>
+                <span className="text-xs text-zinc-400">
+                  {new Date(entry.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
