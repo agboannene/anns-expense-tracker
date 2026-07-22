@@ -46,7 +46,7 @@ export default function SignInPage() {
     setResetLoading(true)
     setResetMsg("")
     try {
-      const { error } = await authClient.forgetPassword({ email: resetEmail, redirectTo: "/reset-password" })
+      const { error } = await authClient.forgotPassword({ email: resetEmail, redirectTo: "/reset-password" })
       if (error) {
         setResetMsg(error.message || "Could not send reset email")
       } else {
