@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic"
 
 import { db } from "@/lib/db"
 import { savingsGoals, savingsContributions, recurringItems, pendingItems, dailySpendEntries, incomeEntries } from "@/lib/db/schema"
-import { eq, sql, inArray } from "drizzle-orm"
+import { eq, and, sql, inArray } from "drizzle-orm"
 import { SummaryCard } from "@/components/dashboard/summary-card"
 import { IncomeForm } from "@/components/dashboard/income-form"
 import { PiggyBank, Clock, Receipt, DollarSign } from "lucide-react"
