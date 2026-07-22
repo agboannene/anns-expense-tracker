@@ -5,7 +5,6 @@ import { dailySpendEntries } from "@/lib/db/schema"
 import { sql } from "drizzle-orm"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { AddSpendForm } from "@/components/daily-spend/add-spend-form"
 
 function getMonthRange() {
   const now = new Date()
@@ -70,7 +69,7 @@ export default async function DailySpendPage() {
           <CardTitle>Log Spending</CardTitle>
         </CardHeader>
         <CardContent>
-          <AddSpendForm onSuccess={() => {}} />
+          <p className="text-sm text-zinc-400">Form placeholder</p>
         </CardContent>
       </Card>
 
