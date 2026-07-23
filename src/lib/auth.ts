@@ -8,6 +8,11 @@ export const auth = betterAuth({
     provider: "pg",
     schema,
   }),
+  trustedOrigins: [
+    "https://anns-expense-tracker.vercel.app",
+    "https://**-annieennie.vercel.app",
+    "http://localhost:3000",
+  ],
   emailAndPassword: {
     enabled: true,
   },
