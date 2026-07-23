@@ -33,9 +33,11 @@ export default function SignInPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       })
-      const data = await res.json()
+      const text = await res.text()
+      let data: any
+      try { data = JSON.parse(text) } catch { data = { message: text } }
       if (!res.ok || data.error) {
-        setError(data.error?.message || data.message || "Invalid credentials")
+        setError(data.error?.message || data.message || `Error ${res.status}`)
       } else {
         router.push("/dashboard")
         router.refresh()
