@@ -23,15 +23,20 @@ export default function SignUpPage() {
     setError("")
     setLoading(true)
     try {
-      const { error } = await authClient.signUp.email({ name, email, password })
-      if (error) {
-        setError(error.message || "Could not create account")
+      const res = await fetch("/api/auth/sign-up/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      })
+      const data = await res.json()
+      if (!res.ok || data.error) {
+        setError(data.error?.message || data.message || "Could not create account")
       } else {
         router.push("/sign-in")
         router.refresh()
       }
-    } catch {
-      setError("Something went wrong")
+    } catch (e: any) {
+      setError(e.message || "Something went wrong")
     } finally {
       setLoading(false)
     }

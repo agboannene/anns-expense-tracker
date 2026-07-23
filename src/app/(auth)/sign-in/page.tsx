@@ -28,15 +28,20 @@ export default function SignInPage() {
     setError("")
     setLoading(true)
     try {
-      const { error } = await authClient.signIn.email({ email, password })
-      if (error) {
-        setError(error.message || "Invalid credentials")
+      const res = await fetch("/api/auth/sign-in/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await res.json()
+      if (!res.ok || data.error) {
+        setError(data.error?.message || data.message || "Invalid credentials")
       } else {
         router.push("/dashboard")
         router.refresh()
       }
-    } catch {
-      setError("Something went wrong")
+    } catch (e: any) {
+      setError(e.message || "Something went wrong")
     } finally {
       setLoading(false)
     }
