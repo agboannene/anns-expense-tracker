@@ -10,7 +10,7 @@ export async function GET() {
       WHERE table_name = 'user' 
       ORDER BY ordinal_position
     `)
-    return NextResponse.json({ tables: tables.rows })
+    return NextResponse.json({ tables })
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 })
   }
